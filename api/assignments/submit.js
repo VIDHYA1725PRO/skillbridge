@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const Assignment = require('../backend/models/Assignment');
-const User = require('../backend/models/User');
+const Assignment = require('../../lib/models/Assignment');
+const User = require('../../lib/models/User');
 const jwt = require('jsonwebtoken');
 
 const connectDB = async () => {
