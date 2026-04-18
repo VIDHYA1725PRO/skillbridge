@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const User = require('../../lib/models/User');
-const Course = require('../../lib/models/Course');
 
 const connectDB = async () => {
   if (mongoose.connections[0].readyState) return;
