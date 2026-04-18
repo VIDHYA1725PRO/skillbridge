@@ -9,7 +9,7 @@ const connectDB = async () => {
   await mongoose.connect(process.env.MONGODB_URI);
 };
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   await connectDB();
 
   if (req.method === 'POST') {
