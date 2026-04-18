@@ -11,11 +11,21 @@
   ],
   "routes": [
     {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "/frontend/$1"
     }
   ],
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "nodejs18.x",
+      "maxDuration": 30
+    }
+  },
   "env": {
-    "REACT_APP_API_URL": "https://your-backend-url.vercel.app/api"
+    "NODE_ENV": "production"
   }
 }
