@@ -3,7 +3,7 @@ const router = express.Router();
 const Assignment = require('../models/Assignment');
 const { Notification } = require('../models/index');
 const { protect, authorize } = require('../middleware/auth');
-const { upload, uploadToCloudinary } = require('../middleware/upload');
+const { upload } = require('../middleware/upload');
 
 // Get assignments for student (their enrolled courses)
 router.get('/student', protect, authorize('student'), async (req, res) => {
@@ -82,14 +82,13 @@ router.post('/:id/submit', protect, authorize('student'), upload.single('file'),
     );
     if (alreadySubmitted) return res.status(400).json({ message: 'Already submitted' });
 
-    const result = await uploadToCloudinary(req.file.buffer, 'assignments');
-    const fileUrl = result.secure_url;
-    const fileName = req.file.originalname;
-
     const isLate = new Date() > new Date(assignment.deadline);
     assignment.submissions.push({
       student: req.user._id,
-      fileUrl, fileName,
+      fileData: req.file.buffer,
+      fileName: req.file.originalname,
+      fileType: req.file.mimetype,
+      fileSize: req.file.size,
       status: isLate ? 'late' : 'submitted'
     });
     await assignment.save();
@@ -116,6 +115,47 @@ router.post('/:id/submit', protect, authorize('student'), upload.single('file'),
     res.json({ message: 'Assignment submitted successfully' });
   } catch (err) {
     console.error('Assignment submit error:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Download submission PDF
+router.get('/:id/submission/:studentId/download', protect, async (req, res) => {
+  try {
+    const assignment = await Assignment.findById(req.params.id);
+    if (!assignment) return res.status(404).json({ message: 'Assignment not found' });
+
+    const submission = assignment.submissions.find(
+      s => s.student.toString() === req.params.studentId
+    );
+    if (!submission || !submission.fileData) {
+      return res.status(404).json({ message: 'Submission not found' });
+    }
+
+    res.set({
+      'Content-Type': submission.fileType || 'application/pdf',
+      'Content-Disposition': `attachment; filename="${submission.fileName}"`
+    });
+    res.send(submission.fileData);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Download assignment attachment
+router.get('/:id/attachment/download', protect, async (req, res) => {
+  try {
+    const assignment = await Assignment.findById(req.params.id);
+    if (!assignment || !assignment.attachmentData) {
+      return res.status(404).json({ message: 'Attachment not found' });
+    }
+
+    res.set({
+      'Content-Type': assignment.attachmentType || 'application/pdf',
+      'Content-Disposition': `attachment; filename="${assignment.attachmentName}"`
+    });
+    res.send(assignment.attachmentData);
+  } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });

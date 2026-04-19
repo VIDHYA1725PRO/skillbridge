@@ -52,6 +52,10 @@ export const submitAssignment = (id, formData) => {
 };
 export const gradeAssignment = (id, studentId, data) => API.put(`/assignments/${id}/grade/${studentId}`, data);
 export const deleteAssignment = (id) => API.delete(`/assignments/${id}`);
+export const downloadSubmission = (assignmentId, studentId) => 
+  API.get(`/assignments/${assignmentId}/submission/${studentId}/download`, { responseType: 'blob' });
+export const downloadAssignmentAttachment = (assignmentId) =>
+  API.get(`/assignments/${assignmentId}/attachment/download`, { responseType: 'blob' });
 
 // Quizzes
 export const getStudentQuizzes = () => API.get('/quizzes/student');

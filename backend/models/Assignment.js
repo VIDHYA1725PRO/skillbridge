@@ -2,8 +2,10 @@ const mongoose = require('mongoose');
 
 const submissionSchema = new mongoose.Schema({
   student: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  fileUrl: { type: String, required: true },
-  fileName: { type: String },
+  fileData: { type: Buffer, required: true },
+  fileName: { type: String, required: true },
+  fileType: { type: String, default: 'application/pdf' },
+  fileSize: { type: Number, required: true },
   submittedAt: { type: Date, default: Date.now },
   grade: { type: Number, default: null },
   feedback: { type: String, default: '' },
@@ -17,7 +19,10 @@ const assignmentSchema = new mongoose.Schema({
   teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   deadline: { type: Date, required: true },
   maxMarks: { type: Number, default: 100 },
-  attachmentUrl: { type: String, default: '' },
+  attachmentData: { type: Buffer, default: null },
+  attachmentName: { type: String, default: '' },
+  attachmentType: { type: String, default: 'application/pdf' },
+  attachmentSize: { type: Number, default: 0 },
   submissions: [submissionSchema],
   isActive: { type: Boolean, default: true },
 }, { timestamps: true });

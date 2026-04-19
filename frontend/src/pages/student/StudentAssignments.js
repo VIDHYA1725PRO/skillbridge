@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getStudentAssignments, submitAssignment } from '../../utils/api';
+import { getStudentAssignments, submitAssignment, downloadSubmission } from '../../utils/api';
 import { format, isAfter, formatDistanceToNow } from 'date-fns';
-import { Upload, CheckCircle, Clock, AlertCircle, FileText, Star } from 'lucide-react';
+import { Upload, CheckCircle, Clock, AlertCircle, FileText, Star, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function StudentAssignments() {
@@ -45,6 +45,24 @@ export default function StudentAssignments() {
       toast.error(message);
     } finally {
       setSubmitting(null);
+    }
+  };
+
+  const handleDownloadSubmission = async (assignmentId) => {
+    try {
+      const user = JSON.parse(localStorage.getItem('sb_user'));
+      if (!user?._id) { toast.error('User not found'); return; }
+      const response = await downloadSubmission(assignmentId, user._id);
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `submission-${assignmentId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      toast.error('Failed to download submission');
     }
   };
 
@@ -127,12 +145,18 @@ export default function StudentAssignments() {
                     </div>
                   )}
                   {a.mySubmission && (
-                    <div style={s.submittedInfo}>
-                      <CheckCircle size={20} color="#48BB78" />
-                      <div>
-                        <div style={{fontWeight:'600', fontSize:'13px', color:'#276749'}}>Submitted</div>
-                        <div style={{fontSize:'12px', color:'#A0AEC0'}}>{format(new Date(a.mySubmission.submittedAt), 'MMM d, h:mm a')}</div>
+                    <div style={{display:'flex', alignItems:'center', gap:'12px'}}>
+                      <div style={s.submittedInfo}>
+                        <CheckCircle size={20} color="#48BB78" />
+                        <div>
+                          <div style={{fontWeight:'600', fontSize:'13px', color:'#276749'}}>Submitted</div>
+                          <div style={{fontSize:'12px', color:'#A0AEC0'}}>{format(new Date(a.mySubmission.submittedAt), 'MMM d, h:mm a')}</div>
+                        </div>
                       </div>
+                      <button className="btn btn-outline btn-sm" onClick={() => handleDownloadSubmission(a._id)}
+                        title="Download your submission">
+                        <Download size={14} />
+                      </button>
                     </div>
                   )}
                 </div>
