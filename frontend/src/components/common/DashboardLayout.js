@@ -42,7 +42,7 @@ const adminNav = [
 ];
 
 export default function DashboardLayout() {
-  const { user, logout, socket } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -55,12 +55,6 @@ export default function DashboardLayout() {
       setNotifCount(res.data.filter(n => !n.isRead).length);
     }).catch(() => {});
   }, []);
-
-  useEffect(() => {
-    if (!socket) return;
-    socket.on('receive_notification', () => setNotifCount(c => c + 1));
-    return () => socket.off('receive_notification');
-  }, [socket]);
 
   const handleLogout = () => { logout(); navigate('/login'); };
 

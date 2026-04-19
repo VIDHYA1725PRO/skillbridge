@@ -7,7 +7,7 @@ import { Send, MessageSquare } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function TeacherMessages() {
-  const { user, socket } = useAuth();
+  const { user } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [selected, setSelected] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -24,17 +24,6 @@ export default function TeacherMessages() {
   }, [selected]);
 
   useEffect(() => { messagesEnd.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
-
-  useEffect(() => {
-    if (!socket) return;
-    socket.on('receive_message', (msg) => {
-      if (selected && (msg.sender?._id === selected._id || msg.sender === selected._id)) {
-        setMessages(prev => [...prev, msg]);
-      }
-      getConversations().then(r => setConversations(r.data));
-    });
-    return () => socket.off('receive_message');
-  }, [socket, selected]);
 
   const handleSend = async (e) => {
     e.preventDefault();
