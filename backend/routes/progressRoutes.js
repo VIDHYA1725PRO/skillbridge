@@ -28,7 +28,8 @@ router.post('/log', protect, authorize('student'), async (req, res) => {
 router.get('/heatmap', protect, authorize('student'), async (req, res) => {
   try {
     const twelveWeeksAgo = new Date();
-    twelveWeeksAgo.setDate(twelveWeeksAgo.getDate() - 84);
+    twelveWeeksAgo.setDate(twelveWeeksAgo.getDate() - 83);
+    twelveWeeksAgo.setHours(0, 0, 0, 0);
     const data = await Progress.find({ student: req.user._id, date: { $gte: twelveWeeksAgo } })
       .sort({ date: 1 });
     res.json(data);

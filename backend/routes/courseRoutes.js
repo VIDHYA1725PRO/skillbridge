@@ -86,25 +86,33 @@ router.post('/:id/enroll', protect, authorize('student'), async (req, res) => {
     course.enrolledStudents.push({ student: req.user._id });
     course.totalEnrollments += 1;
     await course.save();
-    await User.findByIdAndUpdate(req.user._id, { $push: { enrolledCourses: course._id } });
+    await User.findByIdAndUpdate(req.user._id, { $addToSet: { enrolledCourses: course._id } });
 
-    // Notify teacher
-    const io = req.app.get('io');
-    const onlineUsers = req.app.get('onlineUsers');
-    const notification = await Notification.create({
-      recipient: course.teacher._id,
-      sender: req.user._id,
-      title: 'New Enrollment',
-      message: `${req.user.name} enrolled in your course "${course.title}"`,
-      type: 'course'
-    });
-    const teacherSocket = onlineUsers.get(course.teacher._id.toString());
-    if (teacherSocket) {
-      io.to(teacherSocket).emit('receive_notification', notification);
+    // Best-effort notify teacher. Enrollment should not fail if notifications cannot be sent.
+    const teacherId = course.teacher?._id || course.teacher;
+    if (teacherId) {
+      try {
+        const io = req.app.get('io');
+        const onlineUsers = req.app.get('onlineUsers');
+        const notification = await Notification.create({
+          recipient: teacherId,
+          sender: req.user._id,
+          title: 'New Enrollment',
+          message: `${req.user.name} enrolled in your course "${course.title}"`,
+          type: 'course'
+        });
+        const teacherSocket = onlineUsers?.get?.(teacherId.toString());
+        if (teacherSocket && io) {
+          io.to(teacherSocket).emit('receive_notification', notification);
+        }
+      } catch (notifyErr) {
+        console.error('Enroll notification error:', notifyErr.message);
+      }
     }
 
     res.json({ message: 'Enrolled successfully', course });
   } catch (err) {
+    console.error('Enroll route error:', err);
     res.status(500).json({ message: err.message });
   }
 });

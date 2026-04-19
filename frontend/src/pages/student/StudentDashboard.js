@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getTodos, createTodo, updateTodo, deleteTodo, getStudentAssignments, getHeatmap, getMe } from '../../utils/api';
-import { format, isAfter, parseISO, startOfDay, subDays } from 'date-fns';
+import { format, isAfter, subDays } from 'date-fns';
 import { BookOpen, ClipboardList, Plus, Trash2, CheckCircle, Circle, AlertCircle, Calendar, Flame } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -17,12 +17,27 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      getTodos().then(r => setTodos(r.data)),
-      getStudentAssignments().then(r => setAssignments(r.data)),
-      getHeatmap().then(r => setHeatmap(r.data)),
-      getMe().then(r => setProfile(r.data)),
-    ]).finally(() => setLoading(false));
+    const loadDashboardData = async () => {
+      const [todosRes, assignmentsRes, heatmapRes, profileRes] = await Promise.allSettled([
+        getTodos(),
+        getStudentAssignments(),
+        getHeatmap(),
+        getMe(),
+      ]);
+
+      if (todosRes.status === 'fulfilled') setTodos(todosRes.value.data);
+      if (assignmentsRes.status === 'fulfilled') setAssignments(assignmentsRes.value.data);
+      if (heatmapRes.status === 'fulfilled') {
+        setHeatmap(heatmapRes.value.data);
+      } else {
+        toast.error('Could not load study heatmap');
+      }
+      if (profileRes.status === 'fulfilled') setProfile(profileRes.value.data);
+
+      setLoading(false);
+    };
+
+    loadDashboardData();
   }, []);
 
   const handleAddTodo = async (e) => {
