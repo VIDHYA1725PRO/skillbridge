@@ -16,11 +16,22 @@ const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:3000')
   .map((origin) => origin.trim())
   .filter(Boolean);
 
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  if (allowedOrigins.includes(origin)) return true;
+
+  try {
+    const hostname = new URL(origin).hostname;
+    return hostname === 'localhost' || hostname.endsWith('.vercel.app');
+  } catch (err) {
+    return false;
+  }
+};
+
 const corsOptions = {
   origin: (origin, callback) => {
     // Allow non-browser or same-origin requests without an Origin header.
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (isAllowedOrigin(origin)) return callback(null, true);
     return callback(new Error('Not allowed by CORS'));
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -29,7 +40,7 @@ const corsOptions = {
 
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: (origin, callback) => callback(null, isAllowedOrigin(origin)),
     methods: ['GET', 'POST'],
     credentials: true
   }
