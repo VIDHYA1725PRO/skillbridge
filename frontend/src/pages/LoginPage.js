@@ -56,7 +56,7 @@ export default function LoginPage() {
         </form>
 
         <p style={styles.register}>
-           <Link to="/register" style={{color:'#667eea', fontWeight:600}}></Link>
+           Don't have an account? <Link to="/register" style={{color:'#667eea', fontWeight:600}}>Register here</Link>
         </p>
         
       </div>
