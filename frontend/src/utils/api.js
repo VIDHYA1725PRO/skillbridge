@@ -38,8 +38,8 @@ export const getCourse = (id) => API.get(`/courses?id=${id}`);
 export const createCourse = (data) => API.post('/courses', data);
 export const updateCourse = (id, data) => API.put(`/courses?id=${id}`, data);
 export const deleteCourse = (id) => API.delete(`/courses?id=${id}`);
-export const enrollCourse = (id) => API.post(`/courses?id=${id}&action=enroll`);
-export const unenrollCourse = (id) => API.post(`/courses?id=${id}&action=unenroll`);
+export const enrollCourse = (id) => API.post(`/courses/${id}/enroll`);
+export const unenrollCourse = (id) => API.post(`/courses/${id}/unenroll`);
 export const getTeacherCourses = () => API.get('/courses?teacher=true');
 
 // Assignments
