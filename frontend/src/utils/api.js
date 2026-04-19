@@ -34,13 +34,13 @@ export const changePassword = (data) => API.put('/auth/change-password', data);
 
 // Courses
 export const getCourses = () => API.get('/courses');
-export const getCourse = (id) => API.get(`/courses?id=${id}`);
+export const getCourse = (id) => API.get(`/courses/${id}`);
 export const createCourse = (data) => API.post('/courses', data);
-export const updateCourse = (id, data) => API.put(`/courses?id=${id}`, data);
-export const deleteCourse = (id) => API.delete(`/courses?id=${id}`);
+export const updateCourse = (id, data) => API.put(`/courses/${id}`, data);
+export const deleteCourse = (id) => API.delete(`/courses/${id}`);
 export const enrollCourse = (id) => API.post(`/courses/${id}/enroll`);
 export const unenrollCourse = (id) => API.post(`/courses/${id}/unenroll`);
-export const getTeacherCourses = () => API.get('/courses?teacher=true');
+export const getTeacherCourses = () => API.get('/courses/teacher/my-courses');
 
 // Assignments
 export const getStudentAssignments = () => API.get('/assignments/student');
