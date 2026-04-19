@@ -95,9 +95,9 @@ export const getUser = (id) => API.get(`/users/${id}`);
 
 // Admin
 export const getAdminStats = () => API.get('/admin/stats');
-export const getAdminUsers = (params) => API.get('/admin/stats?action=users', { params });
+export const getAdminUsers = (params) => API.get('/admin/users', { params });
 export const addAdminUser = (data) => API.post('/admin/users', data);
 export const updateAdminUser = (id, data) => API.put(`/admin/users/${id}`, data);
 export const deleteAdminUser = (id) => API.delete(`/admin/users/${id}`);
-export const getAdminCourses = () => API.get('/admin/stats?action=courses');
+export const getAdminCourses = () => API.get('/admin/courses');
 export const sendAnnouncement = (data) => API.post('/admin/announce', data);

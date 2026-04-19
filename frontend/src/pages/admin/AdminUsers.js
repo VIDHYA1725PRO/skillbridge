@@ -20,7 +20,8 @@ export default function AdminUsers() {
     if (roleFilter !== 'all') params.role = roleFilter;
     if (search) params.search = search;
     const res = await getAdminUsers(params);
-    setUsers(res.data);
+    const payload = res.data;
+    setUsers(Array.isArray(payload) ? payload : payload?.users || []);
   };
 
   useEffect(() => { fetchUsers().finally(() => setLoading(false)); }, []);
