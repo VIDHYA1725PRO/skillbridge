@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const { Notification } = require('../../lib/models/index');
 const { authenticate } = require('../../lib/utils/auth');
+const { Notification } = require('../../lib/models/index');
 
 const connectDB = async () => {
   if (mongoose.connections[0].readyState) return;
@@ -10,17 +10,15 @@ const connectDB = async () => {
 module.exports = async function handler(req, res) {
   await connectDB();
 
-  if (req.method !== 'GET') {
-    res.setHeader('Allow', ['GET']);
+  if (req.method !== 'PUT') {
+    res.setHeader('Allow', ['PUT']);
     return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 
   try {
     const user = await authenticate(req);
-    const notifs = await Notification.find({ recipient: user._id })
-      .populate('sender', 'name avatar role')
-      .sort({ createdAt: -1 }).limit(50);
-    return res.json(notifs);
+    await Notification.updateMany({ recipient: user._id, isRead: false }, { isRead: true });
+    return res.json({ message: 'All marked as read' });
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }

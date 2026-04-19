@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const { Notification } = require('../../lib/models/index');
 const { authenticate } = require('../../lib/utils/auth');
+const { Progress } = require('../../lib/models/index');
 
 const connectDB = async () => {
   if (mongoose.connections[0].readyState) return;
@@ -17,10 +17,17 @@ module.exports = async function handler(req, res) {
 
   try {
     const user = await authenticate(req);
-    const notifs = await Notification.find({ recipient: user._id })
-      .populate('sender', 'name avatar role')
-      .sort({ createdAt: -1 }).limit(50);
-    return res.json(notifs);
+    const days = Number(req.query.days) || 90;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days + 1);
+    const rangeDate = new Date(startDate.toISOString().slice(0, 10));
+
+    const progress = await Progress.find({
+      student: user._id,
+      date: { $gte: rangeDate }
+    }).sort({ date: 1 });
+
+    return res.json(progress);
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }

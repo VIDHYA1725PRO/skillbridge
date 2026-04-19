@@ -46,7 +46,10 @@ export const getTeacherCourses = () => API.get('/courses?teacher=true');
 export const getStudentAssignments = () => API.get('/assignments');
 export const getTeacherAssignments = () => API.get('/assignments');
 export const createAssignment = (data) => API.post('/assignments', data);
-export const submitAssignment = (id, formData) => API.post(`/assignments/${id}/submit`, formData);
+export const submitAssignment = (id, formData) => {
+  formData.append('assignmentId', id);
+  return API.post('/assignments/submit', formData);
+};
 export const gradeAssignment = (id, studentId, data) => API.put(`/assignments/${id}/grade/${studentId}`, data);
 export const deleteAssignment = (id) => API.delete(`/assignments/${id}`);
 
