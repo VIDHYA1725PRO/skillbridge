@@ -72,18 +72,19 @@ router.post('/:id/submit', protect, authorize('student'), upload.single('file'),
   try {
     const assignment = await Assignment.findById(req.params.id);
     if (!assignment) return res.status(404).json({ message: 'Assignment not found' });
+
+    if (!req.file) {
+      return res.status(400).json({ message: 'Please upload a file' });
+    }
     
     const alreadySubmitted = assignment.submissions.find(
       s => s.student.toString() === req.user._id.toString()
     );
     if (alreadySubmitted) return res.status(400).json({ message: 'Already submitted' });
 
-    let fileUrl = '', fileName = '';
-    if (req.file) {
-      const result = await uploadToCloudinary(req.file.buffer, 'assignments');
-      fileUrl = result.secure_url;
-      fileName = req.file.originalname;
-    }
+    const result = await uploadToCloudinary(req.file.buffer, 'assignments');
+    const fileUrl = result.secure_url;
+    const fileName = req.file.originalname;
 
     const isLate = new Date() > new Date(assignment.deadline);
     assignment.submissions.push({
@@ -93,18 +94,24 @@ router.post('/:id/submit', protect, authorize('student'), upload.single('file'),
     });
     await assignment.save();
 
-    // Notify teacher
-    const io = req.app.get('io');
-    const onlineUsers = req.app.get('onlineUsers');
-    const notif = await Notification.create({
-      recipient: assignment.teacher,
-      sender: req.user._id,
-      title: 'Assignment Submitted',
-      message: `${req.user.name} submitted "${assignment.title}"`,
-      type: 'assignment'
-    });
-    const socketId = onlineUsers.get(assignment.teacher.toString());
-    if (socketId) io.to(socketId).emit('receive_notification', notif);
+    // Best-effort notify teacher. Submission should not fail if notifications cannot be sent.
+    if (assignment.teacher) {
+      try {
+        const io = req.app.get('io');
+        const onlineUsers = req.app.get('onlineUsers');
+        const notif = await Notification.create({
+          recipient: assignment.teacher,
+          sender: req.user._id,
+          title: 'Assignment Submitted',
+          message: `${req.user.name} submitted "${assignment.title}"`,
+          type: 'assignment'
+        });
+        const socketId = onlineUsers?.get?.(assignment.teacher.toString());
+        if (socketId && io) io.to(socketId).emit('receive_notification', notif);
+      } catch (notifyErr) {
+        console.error('Assignment submit notification error:', notifyErr.message);
+      }
+    }
 
     res.json({ message: 'Assignment submitted successfully' });
   } catch (err) {
