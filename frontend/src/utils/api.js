@@ -43,24 +43,24 @@ export const unenrollCourse = (id) => API.post(`/courses?id=${id}&action=unenrol
 export const getTeacherCourses = () => API.get('/courses?teacher=true');
 
 // Assignments
-export const getStudentAssignments = () => API.get('/assignments');
-export const getTeacherAssignments = () => API.get('/assignments');
+export const getStudentAssignments = () => API.get('/assignments/student');
+export const getTeacherAssignments = () => API.get('/assignments/teacher');
 export const createAssignment = (data) => API.post('/assignments', data);
 export const submitAssignment = (id, formData) => {
   formData.append('assignmentId', id);
-  return API.post('/assignments/submit', formData);
+  return API.post(`/assignments/${id}/submit`, formData);
 };
 export const gradeAssignment = (id, studentId, data) => API.put(`/assignments/${id}/grade/${studentId}`, data);
 export const deleteAssignment = (id) => API.delete(`/assignments/${id}`);
 
 // Quizzes
-export const getStudentQuizzes = () => API.get('/quizzes?role=student');
-export const getTeacherQuizzes = () => API.get('/quizzes?role=teacher');
-export const getQuizForAttempt = (id) => API.get(`/quizzes?attempt=${id}`);
-export const submitQuiz = (id, data) => API.post(`/quizzes?submit=${id}`, data);
+export const getStudentQuizzes = () => API.get('/quizzes/student');
+export const getTeacherQuizzes = () => API.get('/quizzes/teacher');
+export const getQuizForAttempt = (id) => API.get(`/quizzes/${id}/attempt`);
+export const submitQuiz = (id, data) => API.post(`/quizzes/${id}/submit`, data);
 export const createQuiz = (data) => API.post('/quizzes', data);
-export const toggleQuiz = (id) => API.put(`/quizzes?toggle=${id}`);
-export const deleteQuiz = (id) => API.delete(`/quizzes?delete=${id}`);
+export const toggleQuiz = (id) => API.put(`/quizzes/${id}/toggle`);
+export const deleteQuiz = (id) => API.delete(`/quizzes/${id}`);
 
 // Messages
 export const getConversations = () => API.get('/messages/conversations');
