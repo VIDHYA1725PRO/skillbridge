@@ -1,6 +1,6 @@
 // AdminNotifications.js
-import React, { useState, useEffect } from 'react';
-import { getAdminUsers, sendAnnouncement } from '../../utils/api';
+import React, { useState } from 'react';
+import { sendAnnouncement } from '../../utils/api';
 import { Megaphone, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 
