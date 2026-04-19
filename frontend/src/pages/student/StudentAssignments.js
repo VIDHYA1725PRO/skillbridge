@@ -9,6 +9,7 @@ export default function StudentAssignments() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(null);
   const [tab, setTab] = useState('pending');
+  const [selectedFiles, setSelectedFiles] = useState({});
   const fileRefs = useRef({});
 
   useEffect(() => {
@@ -19,6 +20,13 @@ export default function StudentAssignments() {
   const pending = assignments.filter(a => !a.mySubmission && isAfter(new Date(a.deadline), now));
   const overdue = assignments.filter(a => !a.mySubmission && !isAfter(new Date(a.deadline), now));
   const submitted = assignments.filter(a => a.mySubmission);
+
+  const handleFileSelect = (assignmentId, event) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFiles(prev => ({ ...prev, [assignmentId]: file.name }));
+    }
+  };
 
   const handleSubmit = async (assignmentId) => {
     const fileInput = fileRefs.current[assignmentId];
@@ -31,6 +39,7 @@ export default function StudentAssignments() {
       toast.success('Assignment submitted!');
       const r = await getStudentAssignments();
       setAssignments(r.data);
+      setSelectedFiles(prev => ({ ...prev, [assignmentId]: null }));
     } catch (err) {
       const message = err.response?.data?.message || err.message || 'Submission failed';
       toast.error(message);
@@ -107,9 +116,9 @@ export default function StudentAssignments() {
                   {!a.mySubmission && (
                     <div style={s.submitArea}>
                       <input type="file" ref={el => fileRefs.current[a._id] = el} style={{display:'none'}}
-                        accept=".pdf" id={`file-${a._id}`} />
+                        accept=".pdf" id={`file-${a._id}`} onChange={(e) => handleFileSelect(a._id, e)} />
                       <label htmlFor={`file-${a._id}`} style={s.fileLabel}>
-                        <Upload size={14} /> Choose PDF File
+                        <Upload size={14} /> {selectedFiles[a._id] ? selectedFiles[a._id] : 'Choose PDF File'}
                       </label>
                       <button className="btn btn-primary btn-sm" onClick={() => handleSubmit(a._id)}
                         disabled={submitting === a._id}>
